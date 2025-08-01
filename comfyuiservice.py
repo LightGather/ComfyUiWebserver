@@ -259,6 +259,7 @@ def get_images(ws, prompt):
     prompt_id = queue_prompt(prompt)['prompt_id']
     output_image = None
     current_node = ""
+
     while True:
         out = ws.recv()
         if isinstance(out, str):
@@ -267,10 +268,17 @@ def get_images(ws, prompt):
                 data = message['data']
                 if data['prompt_id'] == prompt_id:
                     if data['node'] is None:
-                        break #Execution is done
+                        print("Execution is done")
+                        break
                     else:
                         node_number = data['node']
                         current_node = prompt[node_number]["class_type"]
+                        print(f"Executing node: {current_node}") # 현재 실행 중인 노드 출력
+
+            elif message['type'] == 'progress': # 이 부분이 추가됨
+                data = message['data']
+                progress_percentage = (data['value'] / data['max']) * 100
+                print(f"Progress: {progress_percentage:.1f}% ({data['value']}/{data['max']})")
         else:
             if current_node == save_image_websocket:
                 output_image = out[8:]
