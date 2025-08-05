@@ -237,6 +237,10 @@ def get_prompt_with_workflow(input):
 
     prompt_json = json.loads(prompt_text)
     prompt_json["6"]["inputs"]["text"] = input
+    prompt_json["27"]["inputs"]["width"] = 512
+    prompt_json["27"]["inputs"]["height"] = 512
+    prompt_json["30"]["inputs"]["width"] = 512
+    prompt_json["30"]["inputs"]["height"] = 512
     return prompt_json
 
 def queue_prompt(prompt):
