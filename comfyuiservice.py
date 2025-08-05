@@ -241,6 +241,7 @@ def get_prompt_with_workflow(input):
     prompt_json["27"]["inputs"]["height"] = 512
     prompt_json["30"]["inputs"]["width"] = 512
     prompt_json["30"]["inputs"]["height"] = 512
+    prompt_json["9"]["inputs"]["filename_prefix"] = f"{client_id}_ComfyUI"
     return prompt_json
 
 def queue_prompt(prompt):
