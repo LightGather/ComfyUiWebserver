@@ -6,10 +6,10 @@ import urllib.parse
 
 save_image_websocket = 'SaveImageWebsocket'
 server_address = "127.0.0.1:8188"
-client_id = str(uuid.uuid4())
+#client_id = str(uuid.uuid4())
 
 
-def get_prompt_with_workflow(input):
+def get_prompt_with_workflow(input, client_id):
     prompt_text = '''
     {
     "6": {
@@ -244,7 +244,7 @@ def get_prompt_with_workflow(input):
     prompt_json["9"]["inputs"]["filename_prefix"] = f"{client_id}_ComfyUI"
     return prompt_json
 
-def queue_prompt(prompt):
+def queue_prompt(prompt, client_id):
     p = {"prompt": prompt, "client_id": client_id}
     data = json.dumps(p).encode('utf-8')
     req =  urllib.request.Request("http://{}/prompt".format(server_address), data=data)
@@ -260,8 +260,8 @@ def get_history(prompt_id):
     with urllib.request.urlopen("http://{}/history/{}".format(server_address, prompt_id)) as response:
         return json.loads(response.read())
 
-def get_images(ws, prompt):
-    prompt_id = queue_prompt(prompt)['prompt_id']
+def get_images(ws, prompt, client_id):
+    prompt_id = queue_prompt(prompt, client_id)['prompt_id']
     output_image = None
     current_node = ""
 
@@ -290,9 +290,9 @@ def get_images(ws, prompt):
 
     return output_image
 
-def fetch_image_from_comfy(input):
+def fetch_image_from_comfy(input, client_id):
     ws = websocket.WebSocket()
     ws.connect("ws://{}/ws?clientId={}".format(server_address, client_id))
-    images = get_images(ws, get_prompt_with_workflow(input))
+    images = get_images(ws, get_prompt_with_workflow(input, client_id),client_id )
     ws.close()
     return images

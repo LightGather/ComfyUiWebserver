@@ -82,14 +82,16 @@ def open_comfy_ws(client_id: str) -> pyws.WebSocket:
 # HTTP: 이미지 스트리밍
 # =========================
 @app.get("/get-image")
-async def get_image(input: str = Query(..., min_length=1)):
+async def get_image(input: str = Query(..., min_length=1), client_id: str = Query(..., min_length=1)):
     """
     프롬프트를 받아 comfyuiservice.fetch_image_from_comfy 로 생성된 이미지를 PNG로 스트리밍.
     """
+    print("client_id: " + client_id)
+
     # comfyuiservice.fetch_image_from_comfy 는 동기 함수라고 가정
     # 오래 걸릴 수 있으니 스레드 오프로딩도 고려 가능(anyio.to_thread.run_sync)
     try:
-        image_bytes = comfyuiservice.fetch_image_from_comfy(input)
+        image_bytes = comfyuiservice.fetch_image_from_comfy(input,client_id )
         if not image_bytes:
             # 내부 로직상 None/빈 바이트일 경우
             return StreamingResponse(io.BytesIO(b""), media_type="image/png", status_code=502)
@@ -103,7 +105,7 @@ async def get_image(input: str = Query(..., min_length=1)):
 # WS: 진행률 중계(프락시)
 # =========================
 @app.websocket("/ws/progress")
-async def ws_progress(ws: WebSocket, input: str = Query(..., min_length=1)):
+async def ws_progress(ws: WebSocket, input: str = Query(..., min_length=1), client_id: str = Query(..., min_length=1)):
     """
     Unity는 ComfyUI에 직접 연결하지 않고 이 엔드포인트에만 연결.
     - 서버가 ComfyUI에 프롬프트 제출(/prompt) 후,
@@ -111,10 +113,12 @@ async def ws_progress(ws: WebSocket, input: str = Query(..., min_length=1)):
     - 주기적으로 ping 전송해 연결 유지
     """
     await ws.accept()
-    client_id = str(uuid.uuid4())
+    #client_id = str(uuid.uuid4())
+    print("client_id: " + client_id)
 
     # 1) 워크플로우 생성 (사용자 정의)
-    prompt = comfyuiservice.get_prompt_with_workflow(input)
+    #prompt = comfyuiservice.get_prompt_with_workflow(input)
+    prompt = comfyuiservice.get_prompt_with_workflow(input, client_id)
 
     # 2) /prompt 제출
     try:
